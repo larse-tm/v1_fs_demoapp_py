@@ -3,7 +3,6 @@ name: Build and Push DemoApp FS
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -30,3 +29,18 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/xeniap/fs_demo:latest
+      - name: Download TMAS and Scan Repo for Open Source Vulnerabilities and Secrets
+        uses: trendmicro/tmas-scan-action@v3.0.1
+        with:
+          version: '2' # Recommended: pin to major version for automatic updates within v2.x.x
+          vulnerabilitiesScan: true
+          malwareScan: false
+          secretsScan: true
+          artifact: registry:ghcr.io/xeniap/fs_demo:latest
+          additionalArgs: --region=us-east-1
+          tmasApiKey: ${{ env.TMAS_API_KEY }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          REGISTRY: ghcr.io
+          IMAGE_NAME: ${{ github.repository }}
+          TMAS_API_KEY: ${{ env.TMAS_API_KEY }} 
