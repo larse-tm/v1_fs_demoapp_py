@@ -2,33 +2,39 @@ name: Build and Push DemoApp FS
 
 on:
   push:
-    branches: [ main ]
-
+    branches:
+      - main
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  TMAS_API_KEY: ${{ secrets.TMAS_API_KEY }} 
+  
 jobs:
   build:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/xeniap/fs_demo:latest
+          tags: ghcr.io/${{ github.repository }}/fs_demo:latest
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
       - name: Download TMAS and Scan Repo for Open Source Vulnerabilities and Secrets
         uses: trendmicro/tmas-scan-action@v3.0.1
         with:
@@ -36,7 +42,7 @@ jobs:
           vulnerabilitiesScan: true
           malwareScan: false
           secretsScan: true
-          artifact: registry:ghcr.io/xeniap/fs_demo:latest
+          artifact: registry:ghcr.io/${{ github.repository }}/fs_demo:latest
           additionalArgs: --region=us-east-1
           tmasApiKey: ${{ env.TMAS_API_KEY }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
