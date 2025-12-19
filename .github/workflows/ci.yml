@@ -31,6 +31,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}/fs_demo:latest
   scan:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
